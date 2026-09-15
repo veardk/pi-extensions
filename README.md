@@ -8,7 +8,7 @@ for [pi](https://github.com/badlogic/pi-mono) (`@earendil-works/pi-coding-agent`
 
 | Package | Description |
 |---|---|
-| [`@leivik/pi-session-name-format`](./packages/pi-session-name-format) | Session naming with a free-form format template and per-language output |
+| [`@veardk/pi-session-name-format`](./packages/pi-session-name-format) | Session naming with a free-form format template and per-language output |
 
 ## Conventions
 
