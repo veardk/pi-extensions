@@ -1,0 +1,3 @@
+# Add commits here that touch large blocks but don't change semantics
+# (formatter bumps, mass renames, etc.) — one per line.
+# Format: <full-sha>  <subject>
