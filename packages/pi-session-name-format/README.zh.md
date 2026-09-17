@@ -60,7 +60,8 @@ L1 / L2 / L3 三行说清。**L1 自动**，其余两个按需手动。
 - **指定命名模型** —— 用便宜模型（`"provider/id"`），跟主 agent 模型解耦。未设置 = 用 pi 当前会话模型。
 - **零外部运行时依赖** —— 直接走 `@earendil-works/pi-ai/compat`；没有 role 抽象层。
 - **只在首轮触发** —— 首条提示约 0.5–1 秒，后续零开销。
-- **优雅降级** —— model 失败时截取用户提示作标题，扩展从不阻塞启动。
+- **自动降级重试** —— 当配置的命名模型失败时，会自动使用当前会话模型重试一次。若重试成功会发出警告提示；若依然失败则直接通知失败。
+- **双格式模式** —— 支持模板选择模式（内置 4 种模板并保存在配置文件中，可直接编辑）与自由文本输入模式。
 
 ## 快速开始
 
@@ -81,18 +82,45 @@ pi install npm:@veardk/pi-session-name-format
   "enabled": true,
   "model": "anthropic/claude-haiku-4-5",
   "language": "zh-CN",
+  "formatMode": "template",
+  "selectedTemplate": "type-tag",
+  "templates": [
+    {
+      "id": "type-tag",
+      "label": "{yymmdd}-{type(...)}-{concise session name}",
+      "template": "{yymmdd}-{type(feature/design/fix/research/refactor/debug/test/perf/chore/review)}-{concise session name}",
+    },
+    {
+      "id": "emoji-concise",
+      "label": "emoji concise session name",
+      "template": "emoji concise session name",
+    },
+    {
+      "id": "project-name",
+      "label": "[{project}] {name}",
+      "template": "[{project}] {name}",
+    },
+    {
+      "id": "date-name",
+      "label": "{date} — {name}",
+      "template": "{date} — {name}",
+    },
+  ],
   "formatPrompt": "[{project}] {name}",
   "maxLength": 50,
 }
 ```
 
-| 字段           | 默认                           | 说明                                                                                   |
-| -------------- | ------------------------------ | -------------------------------------------------------------------------------------- |
-| `enabled`      | `true`                         | 总开关                                                                                 |
-| `model`        | _(未设置)_                     | 命名 model 的 `"provider/id"`。**未设置 = 用 pi 当前会话模型。**                       |
-| `language`     | `"en"`                         | 输出语言 —— 原样传给 model                                                             |
-| `formatPrompt` | `"emoji concise session name"` | **自由格式的命名提示 —— 字符串原样传入，LLM 自行解读为形状指南。我们不做占位符解析。** |
-| `maxLength`    | `50`                           | 标题最大字符数；`0` = 不限制                                                           |
+| 字段               | 默认                           | 说明                                                                                   |
+| ------------------ | ------------------------------ | -------------------------------------------------------------------------------------- |
+| `enabled`          | `true`                         | 总开关                                                                                 |
+| `model`            | _(未设置)_                     | 命名 model 的 `"provider/id"`。**未设置 = 用 pi 当前会话模型。**                       |
+| `language`         | `"en"`                         | 输出语言 —— 原样传给 model                                                             |
+| `formatMode`       | `"custom"`                     | 格式模式：`"template"`（从模板中选择）或 `"custom"`（自由文本）。旧配置缺省为 custom。 |
+| `selectedTemplate` | `"type-tag"`                   | 模板模式下选中的模板 ID                                                                |
+| `templates`        | _(内置 4 个模板)_              | 保存在配置中的模板列表（`[{ id, label, template }]`），可在 JSON 中直接修改             |
+| `formatPrompt`     | `"emoji concise session name"` | **自由格式的命名提示 —— 自定义模式使用，或作为后备提示。**                             |
+| `maxLength`        | `50`                           | 标题最大字符数；`0` = 不限制                                                           |
 
 **配置源，按优先级排序**（第一个非空者胜出）：
 

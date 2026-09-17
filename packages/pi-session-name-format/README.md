@@ -78,8 +78,11 @@ manual on-demand.
 - **Zero external runtime deps** — talks to `@earendil-works/pi-ai/compat`
   directly; no role abstraction.
 - **First-turn only** — ~0.5–1 s on the first prompt, zero overhead afterwards.
-- **Graceful fallback** — if the model fails, the user prompt is truncated
-  and used as the name; the extension never blocks startup.
+- **Graceful fallback** — if the configured naming model fails, it automatically
+  retries once using the current session model (`ctx.model`). If both fail,
+  it notifies the failure and leaves the session untitled.
+- **Two format modes** — choose from built-in configurable templates or type a
+  custom prompt string directly.
 
 ## Quick start
 
@@ -104,6 +107,30 @@ Or write JSON directly. Global config lives at
   "enabled": true,
   "model": "anthropic/claude-haiku-4-5",
   "language": "zh-CN",
+  "formatMode": "template",
+  "selectedTemplate": "type-tag",
+  "templates": [
+    {
+      "id": "type-tag",
+      "label": "{yymmdd}-{type(...)}-{concise session name}",
+      "template": "{yymmdd}-{type(feature/design/fix/research/refactor/debug/test/perf/chore/review)}-{concise session name}"
+    },
+    {
+      "id": "emoji-concise",
+      "label": "emoji concise session name",
+      "template": "emoji concise session name"
+    },
+    {
+      "id": "project-name",
+      "label": "[{project}] {name}",
+      "template": "[{project}] {name}"
+    },
+    {
+      "id": "date-name",
+      "label": "{date} — {name}",
+      "template": "{date} — {name}"
+    }
+  ],
   "formatPrompt": "[{project}] {name}",
   "maxLength": 50
 }
@@ -114,7 +141,10 @@ Or write JSON directly. Global config lives at
 | `enabled` | `true` | Global on/off switch |
 | `model` | _(unset)_ | `"provider/id"` for the naming model. **Unset = use pi's current session model.** |
 | `language` | `"en"` | Output language — passed verbatim to the model |
-| `formatPrompt` | `"emoji concise session name"` | **Free-form session-name hint — your string is passed verbatim and the LLM interprets it as a shape guide. No placeholder parsing on our side.** |
+| `formatMode` | `"custom"` | Format mode: `"template"` to select from templates, or `"custom"` for free text. Legacy configs default to `"custom"`. |
+| `selectedTemplate` | `"type-tag"` | Selected template id when `formatMode` is `"template"` |
+| `templates` | _(4 defaults)_ | List of configurable templates (`[{ id, label, template }]`) stored in config |
+| `formatPrompt` | `"emoji concise session name"` | **Free-form session-name hint — used in custom mode, or as fallback.** |
 | `maxLength` | `50` | Maximum name length in characters; `0` = unlimited |
 
 **Sources, in priority order** (first non-empty wins):

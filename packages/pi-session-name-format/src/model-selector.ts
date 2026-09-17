@@ -19,7 +19,7 @@ import {
 	matchesKey,
 } from "@earendil-works/pi-tui";
 import type { KeybindingsManager, SelectItem } from "@earendil-works/pi-tui";
-import { getSelectListTheme } from "@earendil-works/pi-coding-agent";
+import { getSelectListTheme, keyHint, rawKeyHint } from "@earendil-works/pi-coding-agent";
 
 export interface ModelItem {
 	value: string;
@@ -82,6 +82,14 @@ export class ModelSearchSelector extends Container {
 		this.list.onSelect = (item) => this.finish(item.value);
 		this.list.onCancel = () => this.finish(null);
 		this.addChild(this.list);
+		this.addChild(new Spacer(1));
+		this.addChild(
+			new Text(
+				`${rawKeyHint("↑↓", "navigate")}  ${keyHint("tui.select.confirm", "select")}  ${keyHint("tui.select.cancel", "cancel")}`,
+				1,
+				0,
+			),
+		);
 	}
 
 	handleInput(keyData: string): void {
